@@ -19,36 +19,42 @@ class crawl_jrj:
         self.init_url = "http://www.jrj.com.cn/"
         self.header = {'User-Agent' : random.choice(crawl_UA.user_agent)}
         # 存放主页的主要链接
-        self.main_url_queue = queue.Queue(100)
+        # self.main_url_queue = queue.Queue(100)
 
         self.client = MongoClient(host = "127.0.0.1", port = 27017)
-        self.collection = self.client["ZZ_v1"]["jrj"]
+        self.collection = self.client["ZZ_v1"]["jrj_caijing"]
 
     def get_main_url(self):
         # 首先访问http: // www.jrj.com.cn /
+        # 获取52个主要的url，保存到mongodb中
         html_ret_init = requests.get(self.init_url, headers = self.header)
-        html_content_init = html_ret_init.content.decode("gb2312")
+        html_content_init = html_ret_init.content.decode("gbk")
         html_content_init = etree.HTML(html_content_init)
         div_a = html_content_init.xpath('//div[@class = "navsub"]//a')
+        num = 1
         for i in div_a:
             item_tmp = {}
+            item_tmp["num"] = num
+            num = num + 1
             item_tmp["name"] = i.xpath('./text()')[0]
             item_tmp["link"] = i.xpath('./@href')[0]
-            print(item_tmp)
-            self.main_url_queue.put(item_tmp)
+            print(item_tmp["name"])
+            self.collection.insert((item_tmp))
+            # self.main_url_queue.put(item_tmp)
 
 
     def process_main_url(self):
-        main_url = self.main_url_queue.get()
-        name = main_url["name"]
-        print(name)
-        funk_ptr = crawl_hash_table_jrj.jrj_subwebsite_hash[name]
-        funk_ptr()
-        self.main_url_queue.task_done()
+        # 读取mongodb的数据,执行对应的处理函数
+        total_main_url_num = self.collection.find().count()
+        for i in range(total_main_url_num):
+            item_tmp = self.collection.find({"num" : i + 1})
+            for i in item_tmp:
+                print(i)
+        # self.main_url_queue.task_done()
 
 
     def run(self):
-        self.get_main_url()
+        # self.get_main_url()
         self.process_main_url()
 
 
