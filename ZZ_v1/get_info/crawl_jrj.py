@@ -23,7 +23,7 @@ class crawl_jrj:
 
         self.client = MongoClient(host = "127.0.0.1", port = 27017)
         self.jrjDatabase = self.client["ZZ_v1"]
-        self.jrj_caijingCollection = self.jrjDatabase["jrj_caijing"]
+        self.jrjCollection = self.jrjDatabase["jrj"]
 
     def get_main_url(self):
         # 首先访问http: // www.jrj.com.cn /
@@ -40,15 +40,15 @@ class crawl_jrj:
             item_tmp["name"] = i.xpath('./text()')[0]
             item_tmp["link"] = i.xpath('./@href')[0]
             print(item_tmp["name"])
-            self.jrj_caijingCollection.insert((item_tmp))
+            self.jrjCollection.insert((item_tmp))
             # self.main_url_queue.put(item_tmp)
 
 
     def process_main_url(self):
         # 读取mongodb的数据,执行对应的处理函数
-        total_main_url_num = self.jrj_caijingCollection.find().count()
+        total_main_url_num = self.jrjCollection.find().count()
         for i in range(total_main_url_num):
-            item_tmp = self.jrj_caijingCollection.find_one({"num" : i + 1})
+            item_tmp = self.jrjCollection.find_one({"num" : i + 1})
             item_tmp_num = item_tmp["num"]
             item_tmp_name = item_tmp["name"]
             item_tmp_link = item_tmp["link"]
