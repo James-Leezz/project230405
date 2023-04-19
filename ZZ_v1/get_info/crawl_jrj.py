@@ -1,18 +1,21 @@
 # http://www.jrj.com.cn/
 # 2023/04/05
 
+
 import requests
 from lxml import etree
 from pymongo import MongoClient
 import random
-
 import crawl_UA
+import crawl_hash_table
+
 
 
 class CrawlJrj:
 
     def __init__(self):
-        self.init_url = "http://www.jrj.com.cn/"
+        # self.init_url = "http://www.jrj.com.cn/"
+        self.init_url = crawl_hash_table.website_hash["金融界"]
         self.header = {'User-Agent': random.choice(crawl_UA.user_agent)}
         # 存放主页的主要链接
         # self.main_url_queue = queue.Queue(100)
